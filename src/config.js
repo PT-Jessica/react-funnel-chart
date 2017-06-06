@@ -80,7 +80,7 @@ export const generateListObject = ({ list, offset, gap }) => {
     }
     const rightX = (w + x) + (size * 1);
     const rightTextY = (distance + y + fontHeight) - 1;
-    centerTextList.push([item.value, (w / 2) + x, rightTextY + (fontHeight * 2)]);
+    centerTextList.push([item.label || item.value, (w / 2) + x, rightTextY + (fontHeight * 2)]);
 
     rightTextList.push([item.name, rightX, rightTextY]);
     rightLineList.push({

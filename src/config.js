@@ -128,9 +128,7 @@ export const inWitchArea = ({ coordList, eventPosition }) => {
     });
     const flag = rayCasting({ x, y }, poly);
 
-    if (flag) {
-      ind = index;
-    }
+    if (flag) ind = index;
   });
   return ind;
 };

@@ -1,10 +1,10 @@
+import { getHoverRgbColor } from 'color-conversion-rgb';
 import {
   getOffsetPixel, generateListObject, inWitchArea
 } from './config';
 
 /*
 * props: {
-    color: [],
     list: [
       { name: 'Q1', value: 500, backgroundColor: '', ... },
       { name: 'Q2', value: 400, backgroundColor: '' },
@@ -118,21 +118,31 @@ export default class Funnel {
   }
 
   drawFunnel = (ctx) => {
-    ctx.translate(0, 0); // change center point
+    ctx.translate(0, 0);
     ctx.clearRect(0, 0, this.width, this.height);
     this.coordList.forEach((item, index) => {
       ctx.beginPath();
+      let start;
+      let end;
       item.forEach((param, ind) => {
         if (ind === 0) {
           ctx.moveTo(...param);
+          start = param[1];
         } else {
           ctx.lineTo(...param);
+          end = param[1];
         }
       });
+      const color = this.fillStyleList[index];
       if (index === this.currentArea) {
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = getHoverRgbColor(color);
+      } else if (this.isGradient) {
+        const gradient = ctx.createLinearGradient(0, start, 0, end);
+        gradient.addColorStop('0', getHoverRgbColor(color, 1));
+        gradient.addColorStop('1', getHoverRgbColor(color, 0.2));
+        ctx.fillStyle = gradient;
       } else {
-        ctx.fillStyle = this.fillStyleList[index];
+        ctx.fillStyle = color;
       }
       ctx.closePath();
       ctx.fill();

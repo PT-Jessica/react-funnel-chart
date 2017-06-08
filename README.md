@@ -1,5 +1,8 @@
-# react-radial-bar-chart
+# react-funnel-chart
 漏斗图(梯形图) by canvas
+
+### Installation
+`npm install react-funnel-chart --save`
 
 ### How to use
 ```javascript
@@ -47,6 +50,6 @@ import FunnelChart from 'react-funnel-chart';
 ![funnel-bar](./funnel-chart.png)
 
 ### Changelog
-##### 0.1.0
+##### 0.1
 非传统漏斗图，目前为满足当前需求，后续增加配置项来适配其他情况
 

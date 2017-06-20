@@ -1,6 +1,6 @@
 {
   "name": "react-funnel-chart",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "react component about funnel chart",
   "main": "lib/index.js",
   "scripts": {

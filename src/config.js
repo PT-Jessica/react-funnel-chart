@@ -32,9 +32,9 @@ const computedCoord = ({ topLineCoord, bottomLineCoord, distance, maxHeight, off
   });
 };
 
-export const generateListObject = ({ list, offset, gap }) => {
-  const copyList = list.map((item) => {
-    return Object.assign({}, item, { value: parseFloat(item.value) || 0 });
+export const generateListObject = ({ list, offset, gap, minPercent }) => {
+  const copyList = list.map((item, index) => {
+    return Object.assign({}, item, { value: parseFloat(item.value) || 0, index });
   });
   const { w, h, x, y, size } = offset;
   const coordList = [];
@@ -46,6 +46,7 @@ export const generateListObject = ({ list, offset, gap }) => {
   const fillStyleList = [];
 
   const maxValue = _.max(_.map(copyList, 'value'));
+  const minValue = maxValue * minPercent;
   const len = _.size(copyList);
   // 满足当前需求
   const gapValue = (len - 2) < 0 ? 0 : len - 2; // len - 1
@@ -54,10 +55,20 @@ export const generateListObject = ({ list, offset, gap }) => {
   // 排序从大到小，目前暂不需要
   // const sortList = _.sortBy(copyList, 'value').reverse();
 
+  const filterMinList = copyList.filter(item => item.value <= minValue);
+  const maxLimitValue = _.max(_.map(filterMinList, 'value'));
+
+  filterMinList.forEach((item) => {
+    const { index, value } = item;
+    const filterPercent = ((value / maxLimitValue) * 0.1) + 0.1;
+    copyList[index].createValue = maxValue * filterPercent;
+  });
+
   copyList.forEach((item, index, array) => {
-    const currentValue = item.value || 0;
+    const currentValue = item.createValue || item.value || 0;
     const after = array[index + 1] || {};
-    const afeterValue = after.value || 0;
+    const afeterValue = after.createValue || after.value || 0;
+
     const topPercent = currentValue / maxValue;
     const bottomPercent = afeterValue / maxValue;
     const distance = (maxHeight * index) + (gap * index);
@@ -70,7 +81,7 @@ export const generateListObject = ({ list, offset, gap }) => {
       if (len > 1) {
         const leftX = x - (size * 1);
         const leftTextY = (distance + y + (maxHeight / 2) + fontHeight) - 1;
-        const rate = ((parseFloat(after.label) / parseFloat(item.label)) * 100).toFixed(2);
+        const rate = ((parseFloat(after.value) / parseFloat(item.value)) * 100).toFixed(2);
         // ((bottomPercent / topPercent) * 100).toFixed(2)
         const tateText = `转化率 ${rate}%`;
         leftTextList.push([tateText, leftX, leftTextY]);

@@ -38,6 +38,7 @@ import FunnelChart from 'react-funnel-chart';
     backgroundColor: 'rgba(0,0,0,0.65)',
     ...
   },
+  minPercent: 0.2,
 }
 ```
 

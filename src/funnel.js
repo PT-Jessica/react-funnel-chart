@@ -16,6 +16,7 @@ import {
     dataStyle: '#000',
     strokeStyle: '#000',
     tooltipStyle: {},
+    minPercent: 0.2,
 * }
 */
 
@@ -40,12 +41,13 @@ export default class Funnel {
     this.width = props.width || this.width || 250;
     this.height = props.height || this.height || 250;
     this.fontSize = props.fontSize || this.fontSize || 12;
+    this.minPercent = props.minPercent || this.minPercent || 0.2;
     // 事件
     this.eventPosition = props.eventPosition;
     this.event = props.event;
     // generate
     this.offset = getOffsetPixel(this.width, this.height);
-    const object = generateListObject({ list: this.list, offset: this.offset, gap: this.gap });
+    const object = generateListObject({ list: this.list, offset: this.offset, gap: this.gap, minPercent: this.minPercent });
 
     this.coordList = object.coordList;
     this.leftTextList = object.leftTextList;

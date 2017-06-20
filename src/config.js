@@ -70,7 +70,9 @@ export const generateListObject = ({ list, offset, gap }) => {
       if (len > 1) {
         const leftX = x - (size * 1);
         const leftTextY = (distance + y + (maxHeight / 2) + fontHeight) - 1;
-        const tateText = `转化率 ${((bottomPercent / topPercent) * 100).toFixed(2)}%`;
+        const rate = ((parseFloat(after.label) / parseFloat(item.label)) * 100).toFixed(2);
+        // ((bottomPercent / topPercent) * 100).toFixed(2)
+        const tateText = `转化率 ${rate}%`;
         leftTextList.push([tateText, leftX, leftTextY]);
         leftLineList.push({
           x1: leftX + 10,

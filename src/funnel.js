@@ -1,6 +1,6 @@
 import { getHoverRgbColor } from 'color-conversion-rgb';
 import {
-  getOffsetPixel, generateListObject, inWitchArea
+  getOffsetPixel, generateListObject, inWitchArea, getTextList
 } from './config';
 
 /*
@@ -47,6 +47,7 @@ export default class Funnel {
     this.event = props.event;
     // generate
     this.offset = getOffsetPixel(this.width, this.height);
+    this.hasText = this.width > 600;
     const object = generateListObject({ list: this.list, offset: this.offset, gap: this.gap, minPercent: this.minPercent });
 
     this.coordList = object.coordList;
@@ -67,46 +68,92 @@ export default class Funnel {
       ctx,
     });
     this.draw(ctx);
-    return this.list[this.currentArea];
+    const item = this.list[this.currentArea];
+    if (item) {
+      const nextItem = this.list[+this.currentArea + 1] || {};
+      const rateText = _.get(this.leftTextList[this.currentArea] || [], ['0'], '转化率 0%');
+      return Object.assign({ rateText, nextItem }, item);
+    }
+    return null;
+  }
+
+  getTextWidth = (ctx, fillX, direction) => (text) => {
+    const { width } = ctx.measureText(text);
+    if (direction === 'start') {
+      return width + fillX > this.width;
+    }
+    return fillX - width < 0;
+  }
+
+  computedDrawText = (ctx, param, direction) => {
+    // 文字的宽度是否超出canvas
+    const fillText = param[0];
+    const fillX = param[1];
+    let fillY = param[2];
+    const curryGetTextWidth = this.getTextWidth(ctx, fillX, direction);
+    let textList = [];
+    if (direction === 'end') {
+      const isExceed = curryGetTextWidth(fillText);
+      if (isExceed) {
+        textList = fillText.split(' ');
+        if (_.size(textList) < 1) {
+          textList = getTextList(fillText, curryGetTextWidth);
+        }
+      } else {
+        textList.push(fillText);
+      }
+    } else {
+      textList = getTextList(fillText, curryGetTextWidth);
+    }
+    const size = _.size(textList);
+    if (size > 1) {
+      fillY -= 10 * size;
+    }
+    textList.forEach((value, index) => {
+      ctx.fillText(value, fillX, fillY + (index * 25));
+    });
   }
 
   drawText = (ctx) => {
     const realFontSize = this.fontSize * this.ratio;
     const lineWidth = 2;
-
     ctx.font = `${realFontSize}px Helvetica Neue For Number`;
-    ctx.textAlign = 'start';
     ctx.fillStyle = this.labelStyle;
     ctx.strokeStyle = this.strokeStyle;
     ctx.lineWidth = lineWidth;
-    const rightLen = _.size(this.rightTextList);
-    this.rightTextList.forEach((param, index) => {
-      const initY = param[2] - 10;
-      const y = rightLen === 1 ? initY + lineWidth :
-         index === rightLen - 1 ? initY - lineWidth : initY + lineWidth;
-      const coordX = this.rightLineList[index];
-      ctx.beginPath();
-      ctx.moveTo(coordX.x1, y);
-      ctx.lineTo(coordX.x2, y);
-      ctx.stroke();
-      ctx.closePath();
 
-      ctx.fillText(...param);
-    });
+    if (this.hasText) {
+      ctx.textAlign = 'start';
+      const rightLen = _.size(this.rightTextList);
+      this.rightTextList.forEach((param, index) => {
+        const initY = param[2] - 10;
+        // 额外计算两图表之间的缝隙
+        const y = rightLen === 1 ? initY + lineWidth :
+          index === rightLen - 1 ? initY - lineWidth : initY + lineWidth;
+        const coordX = this.rightLineList[index];
+        ctx.beginPath();
+        ctx.moveTo(coordX.x1, y);
+        ctx.lineTo(coordX.x2, y);
+        ctx.stroke();
+        ctx.closePath();
 
-    ctx.textAlign = 'end';
-    this.leftTextList.forEach((param, index) => {
-      const initY = param[2] - 10;
-      const y = initY + (lineWidth / 2);
-      const coordX = this.leftLineList[index];
-      ctx.beginPath();
-      ctx.moveTo(coordX.x1, y);
-      ctx.lineTo(coordX.x2, y);
-      ctx.stroke();
-      ctx.closePath();
+        this.computedDrawText(ctx, param, ctx.textAlign);
+      });
 
-      ctx.fillText(...param);
-    });
+      ctx.textAlign = 'end';
+      this.leftTextList.forEach((param, index) => {
+        const initY = param[2] - 10;
+        const y = initY + (lineWidth / 2);
+        const coordX = this.leftLineList[index];
+        ctx.beginPath();
+        ctx.moveTo(coordX.x1, y);
+        ctx.lineTo(coordX.x2, y);
+        ctx.stroke();
+        ctx.closePath();
+
+        this.computedDrawText(ctx, param, ctx.textAlign);
+      });
+    }
 
     ctx.textAlign = 'center';
     this.centerTextList.forEach((param, index) => {

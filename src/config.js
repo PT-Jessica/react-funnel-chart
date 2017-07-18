@@ -3,7 +3,8 @@ const fontHeight = 10;
 export const getOffsetPixel = (width, height) => {
   const totalRatio = 1;
   // 绘图比例
-  const drawRatioW = 0.5;
+  let drawRatioW = 0.5;
+  if (width < 600) drawRatioW = 0.8;
   const drawRatioH = 0.7;
   return {
     w: width * drawRatioW,
@@ -95,7 +96,7 @@ export const generateListObject = ({ list, offset, gap, minPercent }) => {
     const rightTextY = (distance + y + fontHeight) - 1;
     centerTextList.push([item.label || item.value, (w / 2) + x, rightTextY + (fontHeight * 2)]);
 
-    rightTextList.push([item.name, rightX, rightTextY]);
+    rightTextList.push([`${item.name}`, rightX, rightTextY]);
     rightLineList.push({
       x1: topLineCoord[1] + x,
       x2: rightX - 10,
@@ -144,4 +145,32 @@ export const inWitchArea = ({ coordList, eventPosition }) => {
     if (flag) ind = index;
   });
   return ind;
+};
+
+const getSliceIndex = (text = '', vaildateFunc) => {
+  const isExceed = vaildateFunc(text);
+  if (isExceed) {
+    const nextText = text.slice(0, -1);
+    return getSliceIndex(nextText, vaildateFunc);
+  }
+  return _.size(text);
+};
+
+export const getTextList = (text, vaildateFunc) => {
+  const textList = [];
+  const isExceed = vaildateFunc(text);
+  const len = _.size(text);
+  if (isExceed) {
+    let size = 0;
+    let start = 0;
+    while (size < len) {
+      const end = getSliceIndex(text.slice(start, len), vaildateFunc) + start;
+      textList.push(text.slice(start, end));
+      start = end;
+      size = _.size(textList.reduce((p, c) => p + c));
+    }
+  } else {
+    textList.push(text);
+  }
+  return textList;
 };
